@@ -3,7 +3,12 @@ class ParkingLotService():
         self.dao = dao
 
     def create_parking_lot_of_size(self, size):
-        pass
+        if (not isinstance(size, int)):
+            raise ValueError("Lot Size should be integer")
+        if (size <= 0):
+            raise ValueError("Lot Size should be greater than 0.")
+        self.dao.create_slots(size)
+        return size
 
     def park_vehicle(self, vehicle):
         pass

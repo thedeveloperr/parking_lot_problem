@@ -11,3 +11,5 @@ class ParkingSlot():
     def __init__(self, number, vehicle):
         self.number = number
         self.parked_vehicle = Vehicle
+    def __lt__(self, other):
+        return self.number < other.number

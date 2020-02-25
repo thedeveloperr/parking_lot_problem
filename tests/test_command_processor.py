@@ -1,6 +1,6 @@
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
-from errors import MalformedCommandError
+from unittest.mock import patch, MagicMock, PropertyMock
+from errors import MalformedCommandError, DuplicateVehicleError, ParkingFullError
 from command_processor import CommandProcessor
 
 class UnitTestProcessMethod(TestCase):
@@ -17,6 +17,20 @@ class UnitTestProcessMethod(TestCase):
         self.parking_lot_service_mock.create_parking_lot_of_size.assert_called_once_with(7)
         self.assertEqual(output, "Created parking of 7 slots")
 
+    @patch("command_processor.Vehicle")
+    @patch("command_processor.Driver")
+    def test_park_command(self, driverMock, vehicleMock):
+        command = 'Park KA-01-HH-1234 driver_age 21'
+        parked_slot_mock = MagicMock()
+        parked_slot_mock.return_value.parked_vehicle.number = "KA-01-HH-1234"
+        type(parked_slot_mock.return_value).number = PropertyMock(return_value=1)
+        self.parking_lot_service_mock.park_vehicle = parked_slot_mock
+        output = self.command_processor.process(command)
+        driverMock.assert_called_once_with(21)
+        vehicleMock.assert_called_once_with("KA-01-HH-1234", driverMock.return_value)
+        self.parking_lot_service_mock.park_vehicle.assert_called_once_with(vehicleMock.return_value)
+        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1234" has been parked at slot number 1')
+
     def helper_to_test_missing_command_args_error(self, command):
         with self.assertRaises(MalformedCommandError) as e:
             output = self.command_processor.process(command)
@@ -32,6 +46,15 @@ class UnitTestProcessMethod(TestCase):
         self.helper_to_test_missing_command_args_error(command)
 
         command = "Create_parking_lot "
+        self.helper_to_test_missing_command_args_error(command)
+
+        command = "Park "
+        self.helper_to_test_missing_command_args_error(command)
+
+        command = "Park VIP-001 driver_age "
+        self.helper_to_test_missing_command_args_error(command)
+
+        command = "Park driver_age 21"
         self.helper_to_test_missing_command_args_error(command)
 
         command = "Invalidop 6"
@@ -66,3 +89,27 @@ class IntergrationTestProcessMethod(TestCase):
         with self.assertRaises(MalformedCommandError) as e:
             output = self.command_processor.process(command)
             self.assertEqual(e.msg, "Lot size should be positive integer")
+
+    def test_park_with_valid_data(self):
+        command = "Create_parking_lot 3"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "Created parking of 3 slots")
+        command = "Park KA-01-HH-1234 driver_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1234" has been parked at slot number 1')
+
+        command = "Park KA-01-HH-1234 driver_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "Vehicle with this registration number is already parked.")
+
+        command = "Park KA-01-HH-1235 driver_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1235" has been parked at slot number 2')
+
+        command = "Park KA-01-HH-1236 driver_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1236" has been parked at slot number 3')
+
+        command = "Park KA-01-HH-1237 driver_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Cannot park more vehicles because parking is full.')

@@ -10,6 +10,6 @@ class Vehicle():
 class ParkingSlot():
     def __init__(self, number, vehicle):
         self.number = number
-        self.parked_vehicle = Vehicle
+        self.parked_vehicle = vehicle
     def __lt__(self, other):
         return self.number < other.number

@@ -1,3 +1,5 @@
+from errors import ParkingFullError
+
 class ParkingLotService():
     def __init__(self, dao):
         self.dao = dao
@@ -11,7 +13,8 @@ class ParkingLotService():
         return size
 
     def park_vehicle(self, vehicle):
-        pass
+        parked_slot = self.dao.park_vehicle_at_closest_empty_slot(vehicle);
+        return parked_slot
 
     def get_slot_numbers_for_driver_age(self, age):
         pass

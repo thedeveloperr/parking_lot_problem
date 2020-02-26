@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock, PropertyMock, call
 from errors import MalformedCommandError, DuplicateVehicleError, ParkingFullError
 from command_processor import CommandProcessor
 

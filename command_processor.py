@@ -8,7 +8,8 @@ commands_to_operation_map = {
     "Park": "PARK",
     "Slot_number_for_car_with_number": "VEHICLE_NUM_TO_SLOT_NUM",
     "Slot_numbers_for_driver_of_age": "AGE_TO_SLOT_NUMS",
-    "Vehicle_registration_number_for_driver_of_age": "AGE_TO_VEHICLE_NUMS"
+    "Vehicle_registration_number_for_driver_of_age": "AGE_TO_VEHICLE_NUMS",
+    "Leave": "UNPARK"
 }
 
 class CommandProcessor():
@@ -75,5 +76,14 @@ class CommandProcessor():
                 raise MalformedCommandError("{} is not int. Age should be int.".format(input_arr[1]))
             nums = self.parking_lot_service.get_parked_vehicle_numbers_of_driver_age(age)
             return ",".join([str(item) for item in nums])
+        elif operation == "UNPARK":
+            try:
+                slot_num = int(self._read_input(input_arr, 1))
+            except ValueError:
+                raise MalformedCommandError("{} is not int. Slot Number should be int.".format(input_arr[1]))
+            vehicle = self.parking_lot_service.empty_slot(slot_num)
+            if vehicle is None:
+                return "Slot already vacant"
+            return 'Slot number {} vacated, the car with vehicle registration number "{}" left the space, the driver of the car was of age {}'.format(slot_num, vehicle.number, vehicle.driver.age);
 
 

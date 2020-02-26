@@ -152,3 +152,13 @@ class IntegrationTestGovtRegulationQueries(TestCase):
         vehicle_nums = self.service.get_parked_vehicle_numbers_of_driver_age(12)
         self.assertEqual(len(vehicle_nums), 0)
 
+
+class TestUnparkSlotNumber(TestCase):
+    def test_interface(self):
+        self.dao = MagicMock()
+        mockVehicle = Vehicle("mock",Driver(15))
+        self.dao.unpark_vehicle_at_slot_number = MagicMock(return_value=mockVehicle)
+        self.service = ParkingLotService(self.dao)
+        output = self.service.empty_slot(3)
+        self.dao.unpark_vehicle_at_slot_number.assert_called_once_with(3)
+        self.assertEqual(output, mockVehicle)

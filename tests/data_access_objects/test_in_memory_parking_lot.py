@@ -101,6 +101,83 @@ class TestParkClosest(TestCase):
             parked_slot = self.dao.park_vehicle_at_closest_empty_slot(None)
         self.assertEqual(len(self.dao.empty_slots_heap), 3)
 
+    def test_with_unpark(self):
+        self.assertTrue(self.dao.create_slots(3))
+        self.assertEqual(self.dao.capacity, 3)
+        self.assertEqual(len(self.dao.empty_slots_heap), 3)
+        self.assertEqual(len(self.dao.slot_number_to_slot), 3)
+        driver = Driver(22)
+        vehicle1 = Vehicle("pb08-11-22-random", driver)
+        parked_slot = self.dao.park_vehicle_at_closest_empty_slot(vehicle1)
+        self.assertEqual(len(self.dao.empty_slots_heap), 2)
+        self.assertEqual(parked_slot.number, 1)
+
+
+        driver = Driver(23)
+        vehicle2 = Vehicle("pb08-11-23-random", driver)
+        parked_slot = self.dao.park_vehicle_at_closest_empty_slot(vehicle2)
+        self.assertEqual(len(self.dao.empty_slots_heap), 1)
+        self.assertEqual(parked_slot.number, 2)
+
+        driver = Driver(23)
+        vehicle3 = Vehicle("pb08-11-33-random", driver)
+        parked_slot = self.dao.park_vehicle_at_closest_empty_slot(vehicle3)
+        self.assertEqual(len(self.dao.empty_slots_heap), 0)
+        self.assertEqual(parked_slot.number, 3)
+
+        driver = Driver(23)
+        vehicle4 = Vehicle("pb08-11-34-random", driver)
+        with self.assertRaises(ParkingFullError):
+            parked_slot = self.dao.park_vehicle_at_closest_empty_slot(vehicle4)
+            self.assertEqual(len(self.dao.empty_slots_heap), 0)
+        self.dao.unpark_vehicle_at_slot_number(3)
+        self.dao.unpark_vehicle_at_slot_number(1)
+        parked_slot = self.dao.park_vehicle_at_closest_empty_slot(vehicle4)
+        self.assertEqual(len(self.dao.empty_slots_heap), 1)
+        self.assertEqual(parked_slot.number, 1)
+
+
+
+class TestUnparkSlotNumber(TestCase):
+    def setUp(self):
+        self.dao = ParkingLotDao()
+        self.dao.create_slots(3)
+        d1 = Driver(18)
+        v1 = Vehicle("num1", d1)
+        self.dao.park_vehicle_at_closest_empty_slot(v1)
+        d2 = Driver(18)
+        v2 = Vehicle("num2", d2)
+        self.dao.park_vehicle_at_closest_empty_slot(v2)
+
+        d3 = Driver(20)
+        v3 = Vehicle("num3", d3)
+        self.dao.park_vehicle_at_closest_empty_slot(v3)
+
+    def test_unpark(self):
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(2)
+        self.assertEqual(unparked_vehicle.number, "num2")
+        self.assertEqual(unparked_vehicle.driver.age, 18)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(1)
+        self.assertEqual(unparked_vehicle.number, "num1")
+        self.assertEqual(unparked_vehicle.driver.age, 18)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(3)
+        self.assertEqual(unparked_vehicle.number, "num3")
+        self.assertEqual(unparked_vehicle.driver.age, 20)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(3)
+        self.assertEqual(unparked_vehicle, None)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(2)
+        self.assertEqual(unparked_vehicle, None)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(1)
+        self.assertEqual(unparked_vehicle, None)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(4)
+        self.assertEqual(unparked_vehicle, None)
+
 class IntegrationTestGovtRegulationQueries(TestCase):
     def setUp(self):
         self.dao = ParkingLotDao()
@@ -153,3 +230,28 @@ class IntegrationTestGovtRegulationQueries(TestCase):
 
         vehicles = self.dao.get_parked_vehicles_of_driver_age(14)
         self.assertEqual(len(vehicles), 0)
+
+    def test_with_unpark_commands(self):
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(1)
+        self.assertEqual(unparked_vehicle.number, "num1")
+        self.assertEqual(unparked_vehicle.driver.age, 18)
+
+        slots = self.dao.get_slots_by_driver_age(18)
+        vehicles = self.dao.get_parked_vehicles_of_driver_age(18)
+        self.assertEqual(slots[0].number, 2)
+        self.assertEqual(vehicles[0].number, "num2")
+        slot = self.dao.get_slots_by_vehicle_number("num1")
+        self.assertEqual(slot, None)
+
+        slots = self.dao.get_slots_by_driver_age(20)
+        vehicles = self.dao.get_parked_vehicles_of_driver_age(18)
+
+        self.dao.unpark_vehicle_at_slot_number(2)
+        slots = self.dao.get_slots_by_driver_age(18)
+        self.assertEqual(len(slots), 0)
+
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(3)
+        slots = self.dao.get_slots_by_driver_age(20)
+        self.assertEqual(len(slots), 0)
+        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(3)
+        self.assertEqual(unparked_vehicle, None)

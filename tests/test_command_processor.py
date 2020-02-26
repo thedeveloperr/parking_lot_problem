@@ -198,3 +198,48 @@ class IntergrationTestQueryCommandsProcessMethod(TestCase):
         command = "Vehicle_registration_number_for_driver_of_age 18"
         output = self.command_processor.process(command)
         self.assertEqual(output, "KA-02,KA-03")
+
+class IntergrationTestUnparkParkProcessMethod(TestCase):
+    def setUp(self):
+        self.command_processor = CommandProcessor()
+        command = "Create_parking_lot 5"
+        self.command_processor.process(command)
+        command = "Park KA-01 driver_age 21"
+        output = self.command_processor.process(command)
+
+        command = "Park KA-02 driver_age 18"
+        output = self.command_processor.process(command)
+
+        command = "Park KA-03 driver_age 18"
+        output = self.command_processor.process(command)
+
+        command = "Park KA-04 driver_age 21"
+        output = self.command_processor.process(command)
+
+    def test_invalid_query(self):
+        command = "Leave "
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "Missing command arguments.")
+
+        command = "Leave string"
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "string is not int. Slot number should be int.")
+
+    def test_valid_commands(self):
+        command = "Leave 2"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Slot number 2 vacated, the car with vehicle registration number "KA-02" left the space, the driver of the car was of age 18')
+
+        command = "Leave 3"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Slot number 3 vacated, the car with vehicle registration number "KA-03" left the space, the driver of the car was of age 18')
+
+        command = "Leave 3"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Slot already vacant')
+
+        command = "Park KA-05 driver_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, 'Car with vehicle registration number "KA-05" has been parked at slot number 2')

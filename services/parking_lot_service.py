@@ -17,14 +17,17 @@ class ParkingLotService():
         return parked_slot
 
     def get_slot_numbers_for_driver_age(self, age):
-        pass
+        return [ slot.number for slot in self.dao.get_slots_by_driver_age(age) ]
 
     def get_slot_number_for_vehicle_number(self, number):
-        pass
+        slot = self.dao.get_slots_by_vehicle_number(number)
+        if slot is None:
+            return None
+        return slot.number
 
     def empty_slot(self, slot_number):
         pass
 
     def get_parked_vehicle_numbers_of_driver_age(self, age):
-        pass
+        return [ vehicle.number for vehicle in self.dao.get_parked_vehicles_of_driver_age(age) ]
 

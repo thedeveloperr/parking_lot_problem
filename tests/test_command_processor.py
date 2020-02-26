@@ -113,3 +113,88 @@ class IntergrationTestProcessMethod(TestCase):
         command = "Park KA-01-HH-1237 driver_age 21"
         output = self.command_processor.process(command)
         self.assertEqual(output, 'Cannot park more vehicles because parking is full.')
+
+class IntergrationTestQueryCommandsProcessMethod(TestCase):
+    def setUp(self):
+        self.command_processor = CommandProcessor()
+        command = "Create_parking_lot 5"
+        self.command_processor.process(command)
+        command = "Park KA-01 driver_age 21"
+        output = self.command_processor.process(command)
+
+        command = "Park KA-02 driver_age 18"
+        output = self.command_processor.process(command)
+
+        command = "Park KA-03 driver_age 18"
+        output = self.command_processor.process(command)
+
+        command = "Park KA-04 driver_age 21"
+        output = self.command_processor.process(command)
+
+    def test_invalid_query(self):
+        command = "Slot_number_for_car_with_number "
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "Missing command arguments.")
+
+        command = "Slot_numbers_for_driver_of_age "
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "Missing command arguments.")
+
+        command = "Vehicle_registration_number_for_driver_of_age "
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "Missing command arguments.")
+
+        command = "Slot_numbers_for_driver_of_age csd"
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "csd is not int. Age should be int.")
+
+        command = "Vehicle_registration_number_for_driver_of_age sdc"
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "sdc is not int. Age should be int.")
+
+    def test_valid_commands(self):
+        command = "Slot_number_for_car_with_number KA-01"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "1")
+        command = "Slot_number_for_car_with_number KA-02"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "2")
+        command = "Slot_number_for_car_with_number KA-03"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "3")
+        command = "Slot_number_for_car_with_number KA-04"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "4")
+
+        command = "Slot_number_for_car_with_number KA-05"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "")
+
+        command = "Slot_numbers_for_driver_of_age 18"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "2,3")
+
+        command = "Slot_numbers_for_driver_of_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "1,4")
+
+        command = "Slot_numbers_for_driver_of_age 14"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "")
+
+        command = "Vehicle_registration_number_for_driver_of_age 14"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "")
+
+        command = "Vehicle_registration_number_for_driver_of_age 21"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "KA-01,KA-04")
+
+        command = "Vehicle_registration_number_for_driver_of_age 18"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "KA-02,KA-03")

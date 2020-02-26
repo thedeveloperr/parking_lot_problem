@@ -53,11 +53,15 @@ class ParkingLotDao():
         pass
 
     def get_slots_by_driver_age(self, age):
-        pass
+        return [
+            self.vehicle_number_to_slot.get(number) for number in self.age_to_vehicle_number.get(age,[])
+        ]
 
     def get_slots_by_vehicle_number(self, vehicle_number):
-        pass
+        return self.vehicle_number_to_slot.get(vehicle_number, None)
 
     def get_parked_vehicles_of_driver_age(self, age):
-        pass
+        return [
+            self.vehicle_number_to_slot.get(number).parked_vehicle for number in self.age_to_vehicle_number.get(age,[])
+        ]
 

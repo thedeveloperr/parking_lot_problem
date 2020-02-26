@@ -101,3 +101,55 @@ class TestParkClosest(TestCase):
             parked_slot = self.dao.park_vehicle_at_closest_empty_slot(None)
         self.assertEqual(len(self.dao.empty_slots_heap), 3)
 
+class IntegrationTestGovtRegulationQueries(TestCase):
+    def setUp(self):
+        self.dao = ParkingLotDao()
+        self.dao.create_slots(3)
+        d1 = Driver(18)
+        v1 = Vehicle("num1", d1)
+        self.dao.park_vehicle_at_closest_empty_slot(v1)
+        d2 = Driver(18)
+        v2 = Vehicle("num2", d2)
+        self.dao.park_vehicle_at_closest_empty_slot(v2)
+
+        d3 = Driver(20)
+        v3 = Vehicle("num3", d3)
+        self.dao.park_vehicle_at_closest_empty_slot(v3)
+
+    def test_vehicle_number_to_slot(self):
+        slot = self.dao.get_slots_by_vehicle_number("num1")
+        self.assertEqual(slot.parked_vehicle.number, "num1")
+        self.assertEqual(slot.number, 1)
+
+
+        slot = self.dao.get_slots_by_vehicle_number("num3")
+        self.assertEqual(slot.parked_vehicle.number, "num3")
+        self.assertEqual(slot.number, 3)
+        slot = self.dao.get_slots_by_vehicle_number("num2")
+        self.assertEqual(slot.parked_vehicle.number, "num2")
+        self.assertEqual(slot.number, 2)
+
+        slot = self.dao.get_slots_by_vehicle_number("nonparkednumber")
+        self.assertEqual(slot, None)
+
+    def test_slot_from_age(self):
+        slots = self.dao.get_slots_by_driver_age(18)
+        self.assertEqual(slots[0].number, 1)
+        self.assertEqual(slots[1].number, 2)
+
+        slots = self.dao.get_slots_by_driver_age(20)
+        self.assertEqual(slots[0].number, 3)
+
+        slots = self.dao.get_slots_by_driver_age(14)
+        self.assertEqual(len(slots), 0)
+
+    def test_parked_vehicle_from_age(self):
+        vehicles = self.dao.get_parked_vehicles_of_driver_age(18)
+        self.assertEqual(vehicles[0].number, "num1")
+        self.assertEqual(vehicles[1].number, "num2")
+
+        vehicles = self.dao.get_parked_vehicles_of_driver_age(20)
+        self.assertEqual(vehicles[0].number, "num3")
+
+        vehicles = self.dao.get_parked_vehicles_of_driver_age(14)
+        self.assertEqual(len(vehicles), 0)

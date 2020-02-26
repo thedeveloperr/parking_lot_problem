@@ -6,6 +6,9 @@ from models import ParkingSlot, Driver, Vehicle
 commands_to_operation_map = {
     "Create_parking_lot": "INIT",
     "Park": "PARK",
+    "Slot_number_for_car_with_number": "VEHICLE_NUM_TO_SLOT_NUM",
+    "Slot_numbers_for_driver_of_age": "AGE_TO_SLOT_NUMS",
+    "Vehicle_registration_number_for_driver_of_age": "AGE_TO_VEHICLE_NUMS"
 }
 
 class CommandProcessor():
@@ -52,3 +55,25 @@ class CommandProcessor():
                 return "Vehicle with this registration number is already parked."
             except ParkingFullError as e:
                 return 'Cannot park more vehicles because parking is full.'
+        elif operation == "VEHICLE_NUM_TO_SLOT_NUM":
+            vehicle_number = self._read_input(input_arr, 1)
+            slot_num = self.parking_lot_service.get_slot_number_for_vehicle_number(vehicle_number)
+            if slot_num is None:
+                return ""
+            return str(slot_num)
+        elif operation == "AGE_TO_SLOT_NUMS":
+            try:
+                age = int(self._read_input(input_arr, 1))
+            except ValueError:
+                raise MalformedCommandError("{} is not int. Age should be int.".format(input_arr[1]))
+            slot_nums = self.parking_lot_service.get_slot_numbers_for_driver_age(age)
+            return ",".join([str(item) for item in slot_nums])
+        elif operation == "AGE_TO_VEHICLE_NUMS":
+            try:
+                age = int(self._read_input(input_arr, 1))
+            except ValueError:
+                raise MalformedCommandError("{} is not int. Age should be int.".format(input_arr[1]))
+            nums = self.parking_lot_service.get_parked_vehicle_numbers_of_driver_age(age)
+            return ",".join([str(item) for item in nums])
+
+

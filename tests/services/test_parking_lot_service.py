@@ -107,3 +107,48 @@ class IntegrationTestParkVehicle(TestCase):
             v =Vehicle("rndomplate", driver)
             parked_slot = self.service.park_vehicle(v)
 
+class IntegrationTestGovtRegulationQueries(TestCase):
+    def setUp(self):
+        self.dao = ParkingLotDao()
+        self.service = ParkingLotService(self.dao)
+        self.service.create_parking_lot_of_size(3)
+
+        d1 = Driver(18)
+        v1 = Vehicle("num1", d1)
+        self.service.park_vehicle(v1)
+
+        d2 = Driver(18)
+        v2 = Vehicle("num2", d2)
+        self.service.park_vehicle(v2)
+
+        d3 = Driver(20)
+        v3 = Vehicle("num3", d3)
+        self.service.park_vehicle(v3)
+
+    def test_vehicle_number_to_slot_number(self):
+        self.assertEqual(self.service.get_slot_number_for_vehicle_number("num1"), 1)
+        self.assertEqual(self.service.get_slot_number_for_vehicle_number("num2"), 2)
+        self.assertEqual(self.service.get_slot_number_for_vehicle_number("num3"), 3)
+
+    def test_slot_numbers_for_age(self):
+        slot_nums = self.service.get_slot_numbers_for_driver_age(18)
+        self.assertEqual(slot_nums[0], 1)
+        self.assertEqual(slot_nums[1], 2)
+
+        slot_nums = self.service.get_slot_numbers_for_driver_age(18)
+        self.assertEqual(slot_nums[0], 1)
+
+        slot_nums = self.service.get_slot_numbers_for_driver_age(14)
+        self.assertEqual(len(slot_nums), 0)
+
+    def test_parked_vehicle_number_for_age(self):
+        vehicle_nums = self.service.get_parked_vehicle_numbers_of_driver_age(18)
+        self.assertEqual(vehicle_nums[0], "num1")
+        self.assertEqual(vehicle_nums[1], "num2")
+
+        vehicle_nums = self.service.get_parked_vehicle_numbers_of_driver_age(20)
+        self.assertEqual(vehicle_nums[0], "num3")
+
+        vehicle_nums = self.service.get_parked_vehicle_numbers_of_driver_age(12)
+        self.assertEqual(len(vehicle_nums), 0)
+

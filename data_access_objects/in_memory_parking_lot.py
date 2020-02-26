@@ -1,9 +1,16 @@
 import heapq
 from models import ParkingSlot, Driver, Vehicle
 from copy import deepcopy
-from errors import NoneVehicleError, DuplicateVehicleError, ParkingFullError, InvalidDriverError, ParkingNotCreatedError
+from errors import (
+    NoneVehicleError,
+    DuplicateVehicleError,
+    ParkingFullError,
+    InvalidDriverError,
+    ParkingNotCreatedError,
+)
 
-class ParkingLotDao():
+
+class ParkingLotDao:
     def __init__(self):
         self.capacity = 0
         self.empty_slots_heap = []
@@ -17,7 +24,7 @@ class ParkingLotDao():
         if number < 0:
             return False
         self.capacity = number
-        for i in range(1, number+1):
+        for i in range(1, number + 1):
             slot = ParkingSlot(i, None)
             self.empty_slots_heap.append(slot)
             self.slot_number_to_slot[i] = slot
@@ -56,13 +63,16 @@ class ParkingLotDao():
             return None
         unparked_vehicle = slot.parked_vehicle
         del self.vehicle_number_to_slot[unparked_vehicle.number]
-        self.age_to_vehicle_number[unparked_vehicle.driver.age].remove(unparked_vehicle.number)
+        self.age_to_vehicle_number[unparked_vehicle.driver.age].remove(
+            unparked_vehicle.number
+        )
         heapq.heappush(self.empty_slots_heap, ParkingSlot(slot.number, None))
         return unparked_vehicle
 
     def get_slots_by_driver_age(self, age):
         return [
-            self.vehicle_number_to_slot.get(number) for number in self.age_to_vehicle_number.get(age,[])
+            self.vehicle_number_to_slot.get(number)
+            for number in self.age_to_vehicle_number.get(age, [])
         ]
 
     def get_slots_by_vehicle_number(self, vehicle_number):
@@ -70,6 +80,6 @@ class ParkingLotDao():
 
     def get_parked_vehicles_of_driver_age(self, age):
         return [
-            self.vehicle_number_to_slot.get(number).parked_vehicle for number in self.age_to_vehicle_number.get(age,[])
+            self.vehicle_number_to_slot.get(number).parked_vehicle
+            for number in self.age_to_vehicle_number.get(age, [])
         ]
-

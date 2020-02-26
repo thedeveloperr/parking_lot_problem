@@ -1,6 +1,6 @@
-class FileInputConsumer():
+class FileInputConsumer:
     def __init__(self, processor):
-      self.processor = processor
+        self.processor = processor
 
     def consume(self, input_file):
         try:

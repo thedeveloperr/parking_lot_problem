@@ -3,24 +3,29 @@ from unittest.mock import patch, MagicMock, PropertyMock, call
 from errors import MalformedCommandError, DuplicateVehicleError, ParkingFullError
 from command_processor import CommandProcessor
 
-class UnitTestProcessMethod(TestCase):
 
+class UnitTestProcessMethod(TestCase):
     @patch("command_processor.ParkingLotService")
     @patch("command_processor.ParkingLotDao")
     def setUp(self, daoMock, serviceMock):
         self.command_processor = CommandProcessor()
         self.parking_lot_service_mock = serviceMock.return_value
+
     def test_init_command(self):
         command = "Create_parking_lot 7"
-        self.parking_lot_service_mock.create_parking_lot_of_size = MagicMock(return_value=7)
+        self.parking_lot_service_mock.create_parking_lot_of_size = MagicMock(
+            return_value=7
+        )
         output = self.command_processor.process(command)
-        self.parking_lot_service_mock.create_parking_lot_of_size.assert_called_once_with(7)
+        self.parking_lot_service_mock.create_parking_lot_of_size.assert_called_once_with(
+            7
+        )
         self.assertEqual(output, "Created parking of 7 slots")
 
     @patch("command_processor.Vehicle")
     @patch("command_processor.Driver")
     def test_park_command(self, driverMock, vehicleMock):
-        command = 'Park KA-01-HH-1234 driver_age 21'
+        command = "Park KA-01-HH-1234 driver_age 21"
         parked_slot_mock = MagicMock()
         parked_slot_mock.return_value.parked_vehicle.number = "KA-01-HH-1234"
         type(parked_slot_mock.return_value).number = PropertyMock(return_value=1)
@@ -28,8 +33,13 @@ class UnitTestProcessMethod(TestCase):
         output = self.command_processor.process(command)
         driverMock.assert_called_once_with(21)
         vehicleMock.assert_called_once_with("KA-01-HH-1234", driverMock.return_value)
-        self.parking_lot_service_mock.park_vehicle.assert_called_once_with(vehicleMock.return_value)
-        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1234" has been parked at slot number 1')
+        self.parking_lot_service_mock.park_vehicle.assert_called_once_with(
+            vehicleMock.return_value
+        )
+        self.assertEqual(
+            output,
+            'Car with vehicle registration number "KA-01-HH-1234" has been parked at slot number 1',
+        )
 
     def helper_to_test_missing_command_args_error(self, command):
         with self.assertRaises(MalformedCommandError) as e:
@@ -65,6 +75,7 @@ class UnitTestProcessMethod(TestCase):
             output = self.command_processor.process(command)
             self.assertEqual(e.msg, "invalid_size is not int. Slot size should be int.")
 
+
 class IntergrationTestProcessMethod(TestCase):
     def setUp(self):
         self.command_processor = CommandProcessor()
@@ -96,23 +107,35 @@ class IntergrationTestProcessMethod(TestCase):
         self.assertEqual(output, "Created parking of 3 slots")
         command = "Park KA-01-HH-1234 driver_age 21"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1234" has been parked at slot number 1')
+        self.assertEqual(
+            output,
+            'Car with vehicle registration number "KA-01-HH-1234" has been parked at slot number 1',
+        )
 
         command = "Park KA-01-HH-1234 driver_age 21"
         output = self.command_processor.process(command)
-        self.assertEqual(output, "Vehicle with this registration number is already parked.")
+        self.assertEqual(
+            output, "Vehicle with this registration number is already parked."
+        )
 
         command = "Park KA-01-HH-1235 driver_age 21"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1235" has been parked at slot number 2')
+        self.assertEqual(
+            output,
+            'Car with vehicle registration number "KA-01-HH-1235" has been parked at slot number 2',
+        )
 
         command = "Park KA-01-HH-1236 driver_age 21"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Car with vehicle registration number "KA-01-HH-1236" has been parked at slot number 3')
+        self.assertEqual(
+            output,
+            'Car with vehicle registration number "KA-01-HH-1236" has been parked at slot number 3',
+        )
 
         command = "Park KA-01-HH-1237 driver_age 21"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Cannot park more vehicles because parking is full.')
+        self.assertEqual(output, "Cannot park more vehicles because parking is full.")
+
 
 class IntergrationTestQueryCommandsProcessMethod(TestCase):
     def setUp(self):
@@ -199,6 +222,7 @@ class IntergrationTestQueryCommandsProcessMethod(TestCase):
         output = self.command_processor.process(command)
         self.assertEqual(output, "KA-02,KA-03")
 
+
 class IntergrationTestUnparkParkProcessMethod(TestCase):
     def setUp(self):
         self.command_processor = CommandProcessor()
@@ -230,16 +254,25 @@ class IntergrationTestUnparkParkProcessMethod(TestCase):
     def test_valid_commands(self):
         command = "Leave 2"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Slot number 2 vacated, the car with vehicle registration number "KA-02" left the space, the driver of the car was of age 18')
+        self.assertEqual(
+            output,
+            'Slot number 2 vacated, the car with vehicle registration number "KA-02" left the space, the driver of the car was of age 18',
+        )
 
         command = "Leave 3"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Slot number 3 vacated, the car with vehicle registration number "KA-03" left the space, the driver of the car was of age 18')
+        self.assertEqual(
+            output,
+            'Slot number 3 vacated, the car with vehicle registration number "KA-03" left the space, the driver of the car was of age 18',
+        )
 
         command = "Leave 3"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Slot already vacant')
+        self.assertEqual(output, "Slot already vacant")
 
         command = "Park KA-05 driver_age 21"
         output = self.command_processor.process(command)
-        self.assertEqual(output, 'Car with vehicle registration number "KA-05" has been parked at slot number 2')
+        self.assertEqual(
+            output,
+            'Car with vehicle registration number "KA-05" has been parked at slot number 2',
+        )

@@ -1,5 +1,13 @@
+from errors import InvalidDriverError
+
+
 class Driver:
     def __init__(self, age):
+        if not age:
+            raise InvalidDriverError()
+
+        if age <= 0:
+            raise InvalidDriverError()
         self.age = age
 
 

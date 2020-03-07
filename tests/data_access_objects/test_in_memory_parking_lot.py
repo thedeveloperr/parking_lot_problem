@@ -96,6 +96,8 @@ class TestParkClosest(TestCase):
             v = Vehicle("rndomplate", driver)
             parked_slot = self.dao.park_vehicle_at_closest_empty_slot(v)
         with self.assertRaises(InvalidDriverError):
+            driver = Driver(-23)
+        with self.assertRaises(InvalidDriverError):
             driver = Driver(None)
             v = Vehicle("rndomplate", driver)
             parked_slot = self.dao.park_vehicle_at_closest_empty_slot(v)
@@ -185,6 +187,9 @@ class TestUnparkSlotNumber(TestCase):
             unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(4)
             self.assertEqual(unparked_vehicle, None)
 
+        with self.assertRaises(SlotNotPresentError):
+            unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(-2)
+            self.assertEqual(unparked_vehicle, None)
 
 class IntegrationTestGovtRegulationQueries(TestCase):
     def setUp(self):

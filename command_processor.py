@@ -47,12 +47,16 @@ class CommandProcessor:
                 raise MalformedCommandError("Missing command arguments.")
             number_plate = self._read_input(input_arr, 1)
             try:
-                driver_age = self._read_input(input_arr, 3)
+                driver_age = int(self._read_input(input_arr, 3))
+                if driver_age <= 0:
+                    raise MalformedCommandError(
+                    "{} is negative. Age should be positive.".format(input_arr[3])
+                )
             except ValueError:
                 raise MalformedCommandError(
-                    "{} is not int. Slot size should be int.".format(input_arr[3])
+                    "{} is not int. Drive age should be int.".format(input_arr[3])
                 )
-            driver = Driver(int(driver_age))
+            driver = Driver(driver_age)
             vehicle_to_park = Vehicle(number_plate, driver)
             try:
                 parked_slot = self.parking_lot_service.park_vehicle(vehicle_to_park)
@@ -74,6 +78,10 @@ class CommandProcessor:
         elif operation == "AGE_TO_SLOT_NUMS":
             try:
                 age = int(self._read_input(input_arr, 1))
+                if age <= 0:
+                    raise MalformedCommandError(
+                    "{} is negative. Age should be positive.".format(input_arr[1])
+                )
             except ValueError:
                 raise MalformedCommandError(
                     "{} is not int. Age should be int.".format(input_arr[1])
@@ -83,6 +91,10 @@ class CommandProcessor:
         elif operation == "AGE_TO_VEHICLE_NUMS":
             try:
                 age = int(self._read_input(input_arr, 1))
+                if age <= 0:
+                    raise MalformedCommandError(
+                    "{} is negative. Age should be positive.".format(input_arr[1])
+                )
             except ValueError:
                 raise MalformedCommandError(
                     "{} is not int. Age should be int.".format(input_arr[1])
@@ -94,6 +106,10 @@ class CommandProcessor:
         elif operation == "UNPARK":
             try:
                 slot_num = int(self._read_input(input_arr, 1))
+                if slot_num <= 0:
+                    raise MalformedCommandError(
+                    "{} is negative. Slot Number should be positive.".format(input_arr[1])
+                )
                 vehicle = self.parking_lot_service.empty_slot(slot_num)
             except ValueError:
                 raise MalformedCommandError(

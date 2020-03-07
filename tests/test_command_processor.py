@@ -75,6 +75,10 @@ class UnitTestProcessMethod(TestCase):
             output = self.command_processor.process(command)
             self.assertEqual(e.msg, "invalid_size is not int. Slot size should be int.")
 
+        command = "Park number_plate_sample driver_age -21"
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "-100 is negative. Age should be positive.")
 
 class IntergrationTestProcessMethod(TestCase):
     def setUp(self):
@@ -250,6 +254,11 @@ class IntergrationTestUnparkParkProcessMethod(TestCase):
         with self.assertRaises(MalformedCommandError) as e:
             output = self.command_processor.process(command)
             self.assertEqual(e.msg, "string is not int. Slot number should be int.")
+
+        command = "Leave -2"
+        with self.assertRaises(MalformedCommandError) as e:
+            output = self.command_processor.process(command)
+            self.assertEqual(e.msg, "-5 is negative. Slot Number should be positive.")
 
     def test_valid_commands(self):
         command = "Leave 2"

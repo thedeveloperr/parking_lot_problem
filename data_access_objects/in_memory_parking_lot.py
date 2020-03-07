@@ -41,9 +41,11 @@ class ParkingLotDao:
             raise DuplicateVehicleError()
         if len(self.empty_slots_heap) == 0:
             raise ParkingFullError()
-        if vehicle.driver is None:
+        if vehicle.driver is None :
             raise InvalidDriverError()
         if vehicle.driver.age is None:
+            raise InvalidDriverError()
+        if vehicle.driver.age <= 0:
             raise InvalidDriverError()
         empty_slot = heapq.heappop(self.empty_slots_heap)
         if empty_slot is None:
@@ -59,7 +61,7 @@ class ParkingLotDao:
         return ParkingSlot(empty_slot.number, vehicle)
 
     def unpark_vehicle_at_slot_number(self, slot_number):
-        if slot_number > self.capacity:
+        if slot_number > self.capacity or slot_number <= 0:
             raise SlotNotPresentError()
         slot = self.slot_number_to_slot.pop(slot_number, None)
         if slot is None:

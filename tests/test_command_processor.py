@@ -270,6 +270,10 @@ class IntergrationTestUnparkParkProcessMethod(TestCase):
         output = self.command_processor.process(command)
         self.assertEqual(output, "Slot already vacant")
 
+        command = "Leave 6"
+        output = self.command_processor.process(command)
+        self.assertEqual(output, "Slot number not present.")
+
         command = "Park KA-05 driver_age 21"
         output = self.command_processor.process(command)
         self.assertEqual(

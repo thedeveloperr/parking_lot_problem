@@ -7,6 +7,7 @@ from errors import (
     ParkingFullError,
     InvalidDriverError,
     ParkingNotCreatedError,
+    SlotNotPresentError
 )
 
 
@@ -58,6 +59,8 @@ class ParkingLotDao:
         return ParkingSlot(empty_slot.number, vehicle)
 
     def unpark_vehicle_at_slot_number(self, slot_number):
+        if slot_number > self.capacity:
+            raise SlotNotPresentError()
         slot = self.slot_number_to_slot.pop(slot_number, None)
         if slot is None:
             return None

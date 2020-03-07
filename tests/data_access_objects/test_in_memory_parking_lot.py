@@ -7,6 +7,7 @@ from errors import (
     ParkingFullError,
     InvalidDriverError,
     ParkingNotCreatedError,
+    SlotNotPresentError
 )
 
 
@@ -180,8 +181,9 @@ class TestUnparkSlotNumber(TestCase):
         unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(1)
         self.assertEqual(unparked_vehicle, None)
 
-        unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(4)
-        self.assertEqual(unparked_vehicle, None)
+        with self.assertRaises(SlotNotPresentError):
+            unparked_vehicle = self.dao.unpark_vehicle_at_slot_number(4)
+            self.assertEqual(unparked_vehicle, None)
 
 
 class IntegrationTestGovtRegulationQueries(TestCase):

@@ -1,6 +1,6 @@
 from services.parking_lot_service import ParkingLotService
 from data_access_objects.in_memory_parking_lot import ParkingLotDao
-from errors import MalformedCommandError, ParkingFullError, DuplicateVehicleError
+from errors import MalformedCommandError, ParkingFullError, DuplicateVehicleError, SlotNotPresentError
 from models import ParkingSlot, Driver, Vehicle
 
 commands_to_operation_map = {
@@ -94,11 +94,13 @@ class CommandProcessor:
         elif operation == "UNPARK":
             try:
                 slot_num = int(self._read_input(input_arr, 1))
+                vehicle = self.parking_lot_service.empty_slot(slot_num)
             except ValueError:
                 raise MalformedCommandError(
                     "{} is not int. Slot Number should be int.".format(input_arr[1])
                 )
-            vehicle = self.parking_lot_service.empty_slot(slot_num)
+            except SlotNotPresentError:
+                return 'Slot number not present.'
             if vehicle is None:
                 return "Slot already vacant"
             return 'Slot number {} vacated, the car with vehicle registration number "{}" left the space, the driver of the car was of age {}'.format(

@@ -17,6 +17,8 @@ class ParkingFullError(Exception):
 class NoneVehicleError(Exception):
     pass
 
+class SlotNotPresentError(Exception):
+    pass
 
 class InvalidDriverError(Exception):
     pass
